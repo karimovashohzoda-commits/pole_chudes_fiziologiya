@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поле чудес: Физиология ЦНС</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #1e272e; color: white; padding: 15px; margin: 0; }
+        h1 { font-size: 24px; margin-bottom: 5px; color: #00a8ff; }
+        #level-info { font-size: 16px; color: #fbc531; font-weight: bold; margin-bottom: 10px; }
+        .question { font-size: 18px; margin: 15px auto; max-width: 650px; background: #2f3640; padding: 18px; border-radius: 12px; line-height: 1.4; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .word-board { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin: 25px 0; }
+        .word-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
+        .letter-box { width: 30px; height: 40px; border: 2px solid #00a8ff; background: #353b48; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 6px; text-transform: uppercase; }
+        .letter-box.open { background: #00a8ff; color: #1e272e; }
+        .alphabet { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 650px; margin: 0 auto; }
+        .btn-letter { width: 35px; height: 38px; font-size: 16px; font-weight: bold; cursor: pointer; background: #f5f6fa; color: #1e272e; border: none; border-radius: 6px; transition: 0.2s; }
+        .btn-letter:active { transform: scale(0.92); }
+        .btn-letter:disabled { background: #57606f; color: #a4b0be; cursor: not-allowed; }
+        .next-btn { margin-top: 25px; padding: 14px 28px; font-size: 18px; font-weight: bold; background: #4cd137; color: #1e272e; border: none; border-radius: 10px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(76, 209, 55, 0.4); }
+    </style>
+</head>
+<body>
+
+    <h1>🎡 Поле чудес: Физиология ЦНС</h1>
+    <div id="level-info">Вопрос 1 из 20</div>
+    <div class="question" id="question-text">Загрузка...</div>
+    <div class="word-board" id="word-board"></div>
+    <div class="alphabet" id="alphabet"></div>
+    <button class="next-btn" id="next-btn" onclick="nextLevel()">Следующее слово ➔</button>
+
+    <script>
+        const levels = [
+            { question: "Тормозные вставочные нейроны передних рогов спинного мозга, обеспечивающие возвратное торможение мотонейронов?", answer: "КЛЕТКИ РЕНШОУ" },
+            { question: "Состояние резкого угнетения всех рефлексов ниже места поперечной перерезки спинного мозга?", answer: "СПИНАЛЬНЫЙ ШОК" },
+            { question: "Восходящий путь задних канатиков спинного мозга, проводящий импульсы проприоцептивной чувствительности от нижних конечностей?", answer: "ТОНКИЙ ПУЧОК" },
+            { question: "Внезапная рефлекторная остановка дыхания при раздражении рецепторов верхних дыхательных путей?", answer: "АПНОЭ" },
+            { question: "Интегративный нервный центр продолговатого мозга, регулирующий тонус кровеносных сосудов?", answer: "СОСУДОДВИГАТЕЛЬНЫЙ ЦЕНТР" },
+            { question: "Защитный рефлекс продолговатого мозга, направленный на очищение трахеи и бронхов от инородных частиц?", answer: "КАШЕЛЬ" },
+            { question: "Структура варолиева моста, тормозящая центр вдоха и регулирующая смену фаз дыхательного цикла?", answer: "ПНЕВМОТАКСИЧЕСКИЙ ЦЕНТР" },
+            { question: "Как называется безусловный рефлекс сужения зрачка в ответ на воздействие света, осуществляемый при участии претектальной области и добавочных ядер глазодвигательного нерва?", answer: "ЗРАЧКОВЫЙ РЕФЛЕКС" },
+            { question: "Третья пара черепных нервов, ядра которой лежат в среднем мозге и иннервируют мышцы глаза?", answer: "ГЛАЗОДВИГАТЕЛЬНЫЙ НЕРВ" },
+            { question: "Дофаминергическая структура среднего мозга, регулирующая тонкую пластику движений и тонус?", answer: "ЧЕРНАЯ СУБСТАНЦИЯ" },
+            { question: "Резкое повышение тонуса мышц-разгибателей при перерезке ствола мозга ниже красных ядер?", answer: "ДЕЦЕРЕБРАЦИОННАЯ РИГИДНОСТЬ" },
+            { question: "Парное ядро среднего мозга, посылающее импульсы к сгибателям и уравновешивающее тонус экстензоров?", answer: "КРАСНОЕ ЯДРО" },
+            { question: "Сетевидное образование ствола мозга, оказывающее восходящее активирующее влияние на кору?", answer: "РЕТИКУЛЯРНАЯ ФОРМАЦИЯ" },
+            { question: "Рефлекс среднего мозга, проявляющийся поворотом головы и глаз в сторону внезапного раздражителя?", answer: "ОРИЕНТИРОВОЧНЫЙ РЕФЛЕКС" },
+            { question: "Гигантские пирамидные нейроны пятого слоя первичной моторной коры больших полушарий?", answer: "КЛЕТКИ БЕЦА" },
+            { question: "Извилина лобной доли коры больших полушарий, где расположена первичная моторная зона?", answer: "ПРЕЦЕНТРАЛЬНАЯ ИЗВИЛИНА" },
+            { question: "Как называется нисходящий двигательный путь, образованный аксонами нейронов моторной коры и обеспечивающий проведение импульсов к двигательным нейронам спинного мозга?", answer: "ПИРАМИДНЫЙ ПУТЬ" },
+            { question: "Схематическое изображение проекции частей тела в первичной моторной коре больших полушарий?", answer: "МОТОРНЫЙ ГОМУНКУЛУС" },
+            { question: "Ослабление произвольных движений на противоположной стороне тела при повреждении пирамидного пути?", answer: "ЦЕНТРАЛЬНЫЙ ПАРЕЗ" },
+            { question: "Область лобной коры кпереди от первичной моторной зоны, отвечающая за программирование движений?", answer: "ПРЕМОТОРНАЯ КОРА" }
+        ];
+
+        let currentLevel = 0;
+        let guessedLetters = [];
+        const letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ".split("");
+
+        function initLevel() {
+            const level = levels[currentLevel];
+            guessedLetters = [];
+            document.getElementById("level-info").innerText = `Вопрос ${currentLevel + 1} из ${levels.length}`;
+            document.getElementById("question-text").innerText = level.question;
+            document.getElementById("next-btn").style.display = "none";
+            renderBoard();
+            renderAlphabet();
+        }
+
+        function renderBoard() {
+            const board = document.getElementById("word-board");
+            board.innerHTML = "";
+            const words = levels[currentLevel].answer.toUpperCase().split(" ");
+            let allOpened = true;
+
+            for (let word of words) {
+                const wordGroup = document.createElement("div");
+                wordGroup.className = "word-group";
+
+                for (let char of word) {
+                    const box = document.createElement("div");
+                    box.className = "letter-box";
+                    if (guessedLetters.includes(char)) {
+                        box.innerText = char;
+                        box.classList.add("open");
+                    } else {
+                        allOpened = false;
+                    }
+                    wordGroup.appendChild(box);
+                }
+                board.appendChild(wordGroup);
+            }
+
+            if (allOpened) {
+                if (currentLevel < levels.length - 1) {
+                    document.getElementById("next-btn").style.display = "inline-block";
+                } else {
+                    document.getElementById("question-text").innerText = "🎉 Поздравляем! Вы блестяще прошли все 20 вопросов по физиологии ЦНС!";
+                    document.getElementById("alphabet").innerHTML = "";
+                }
+            }
+        }
+
+        function renderAlphabet() {
+            const alphaDiv = document.getElementById("alphabet");
+            alphaDiv.innerHTML = "";
+            for (let char of letters) {
+                const btn = document.createElement("button");
+                btn.className = "btn-letter";
+                btn.innerText = char;
+                btn.disabled = guessedLetters.includes(char);
+                btn.onclick = () => {
+                    guessedLetters.push(char);
+                    btn.disabled = true;
+                    renderBoard();
+                };
+                alphaDiv.appendChild(btn);
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            initLevel();
+        }
+
+        initLevel();
+    </script>
+</body>
+</html>
