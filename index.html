@@ -5,26 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поле чудес: Физиология ЦНС</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #1e272e; color: white; padding: 15px; margin: 0; }
-        h1 { font-size: 24px; margin-bottom: 5px; color: #00a8ff; }
-        #level-info { font-size: 16px; color: #fbc531; font-weight: bold; margin-bottom: 10px; }
-        .question { font-size: 18px; margin: 15px auto; max-width: 650px; background: #2f3640; padding: 18px; border-radius: 12px; line-height: 1.4; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .word-board { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin: 25px 0; }
-        .word-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
-        .letter-box { width: 30px; height: 40px; border: 2px solid #00a8ff; background: #353b48; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 6px; text-transform: uppercase; }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #1e272e; color: white; padding: 12px; margin: 0; }
+        h1 { font-size: 22px; margin: 5px 0; color: #00a8ff; }
+        .top-bar { display: flex; justify-content: center; gap: 15px; margin: 8px 0; font-size: 16px; font-weight: bold; }
+        #level-info { color: #fbc531; background: #2f3640; padding: 6px 14px; border-radius: 8px; }
+        #score-info { color: #4cd137; background: #2f3640; padding: 6px 14px; border-radius: 8px; }
+        .question { font-size: 16px; margin: 12px auto; max-width: 650px; background: #2f3640; padding: 14px; border-radius: 12px; line-height: 1.4; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        /* Барабан */
+        .wheel-box { position: relative; width: 220px; height: 220px; margin: 15px auto; }
+        .pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ff3f34; z-index: 10; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+        canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #fbc531; box-shadow: 0 0 15px rgba(251, 197, 49, 0.3); transition: transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
+        
+        .spin-btn { padding: 12px 24px; font-size: 17px; font-weight: bold; background: #fbc531; color: #1e272e; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(251, 197, 49, 0.3); margin-bottom: 10px; }
+        .spin-btn:disabled { background: #57606f; color: #a4b0be; box-shadow: none; cursor: not-allowed; }
+        #status-msg { font-size: 16px; font-weight: bold; min-height: 24px; margin: 8px 0; color: #00d8d6; }
+
+        /* Табло и алфавит */
+        .word-board { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 18px 0; }
+        .word-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; }
+        .letter-box { width: 28px; height: 36px; border: 2px solid #00a8ff; background: #353b48; font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 6px; text-transform: uppercase; }
         .letter-box.open { background: #00a8ff; color: #1e272e; }
         .alphabet { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 650px; margin: 0 auto; }
-        .btn-letter { width: 35px; height: 38px; font-size: 16px; font-weight: bold; cursor: pointer; background: #f5f6fa; color: #1e272e; border: none; border-radius: 6px; transition: 0.2s; }
+        .btn-letter { width: 34px; height: 36px; font-size: 15px; font-weight: bold; cursor: pointer; background: #f5f6fa; color: #1e272e; border: none; border-radius: 6px; transition: 0.2s; }
         .btn-letter:active { transform: scale(0.92); }
-        .btn-letter:disabled { background: #57606f; color: #a4b0be; cursor: not-allowed; }
-        .next-btn { margin-top: 25px; padding: 14px 28px; font-size: 18px; font-weight: bold; background: #4cd137; color: #1e272e; border: none; border-radius: 10px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(76, 209, 55, 0.4); }
+        .btn-letter:disabled { background: #57606f; color: #a4b0be; cursor: not-allowed; opacity: 0.6; }
+        .next-btn { margin-top: 20px; padding: 14px 28px; font-size: 18px; font-weight: bold; background: #4cd137; color: #1e272e; border: none; border-radius: 10px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(76, 209, 55, 0.4); }
     </style>
 </head>
 <body>
 
     <h1>🎡 Поле чудес: Физиология ЦНС</h1>
-    <div id="level-info">Вопрос 1 из 20</div>
+    <div class="top-bar">
+        <div id="level-info">Вопрос 1 из 20</div>
+        <div id="score-info">Очки: 0</div>
+    </div>
+    
     <div class="question" id="question-text">Загрузка...</div>
+
+    <div class="wheel-box">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="300" height="300"></canvas>
+    </div>
+
+    <button class="spin-btn" id="spin-btn" onclick="spinWheel()">🎲 Крутить барабан</button>
+    <div id="status-msg">Крутите барабан, чтобы сделать ход!</div>
+
     <div class="word-board" id="word-board"></div>
     <div class="alphabet" id="alphabet"></div>
     <button class="next-btn" id="next-btn" onclick="nextLevel()">Следующее слово ➔</button>
@@ -53,77 +79,67 @@
             { question: "Область лобной коры кпереди от первичной моторной зоны, отвечающая за программирование движений?", answer: "ПРЕМОТОРНАЯ КОРА" }
         ];
 
+        const sectors = [
+            { label: "100", color: "#00a8ff", value: 100 },
+            { label: "БАНКРОТ", color: "#192a56", value: "BANKRUPT" },
+            { label: "300", color: "#9c88ff", value: 300 },
+            { label: "0", color: "#7f8fa6", value: 0 },
+            { label: "500", color: "#4cd137", value: 500 },
+            { label: "x2", color: "#e84118", value: "DOUBLE" },
+            { label: "200", color: "#fbc531", value: 200 },
+            { label: "400", color: "#0097e6", value: 400 },
+            { label: "0", color: "#7f8fa6", value: 0 },
+            { label: "1000", color: "#e1b12c", value: 1000 },
+            { label: "БАНКРОТ", color: "#192a56", value: "BANKRUPT" },
+            { label: "600", color: "#8c7ae6", value: 600 }
+        ];
+
         let currentLevel = 0;
+        let score = 0;
         let guessedLetters = [];
+        let canGuess = false;
+        let currentSector = null;
+        let currentRotation = 0;
         const letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ".split("");
 
-        function initLevel() {
-            const level = levels[currentLevel];
-            guessedLetters = [];
-            document.getElementById("level-info").innerText = `Вопрос ${currentLevel + 1} из ${levels.length}`;
-            document.getElementById("question-text").innerText = level.question;
-            document.getElementById("next-btn").style.display = "none";
-            renderBoard();
+        function drawWheel() {
+            const canvas = document.getElementById("wheel");
+            const ctx = canvas.getContext("2d");
+            const cx = 150, cy = 150, r = 148;
+            const arc = (2 * Math.PI) / sectors.length;
+
+            ctx.clearRect(0, 0, 300, 300);
+            for (let i = 0; i < sectors.length; i++) {
+                const angle = i * arc;
+                ctx.beginPath();
+                ctx.fillStyle = sectors[i].color;
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, r, angle, angle + arc);
+                ctx.lineTo(cx, cy);
+                ctx.fill();
+                ctx.strokeStyle = "#1e272e";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = sectors[i].label === "БАНКРОТ" ? "bold 12px Arial" : "bold 16px Arial";
+                ctx.fillText(sectors[i].label, r - 12, 5);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            const spinBtn = document.getElementById("spin-btn");
+            spinBtn.disabled = true;
+            canGuess = false;
             renderAlphabet();
-        }
+            setStatus("Барабан крутится...", "#fbc531");
 
-        function renderBoard() {
-            const board = document.getElementById("word-board");
-            board.innerHTML = "";
-            const words = levels[currentLevel].answer.toUpperCase().split(" ");
-            let allOpened = true;
+            const extraSpins = 5 + Math.floor(Math.random() * 4);
+            const randomAngle = Math.floor(Math.random() * 360);
+            currentRotation += extraSpins * 360 + randomAngle;
 
-            for (let word of words) {
-                const wordGroup = document.createElement("div");
-                wordGroup.className = "word-group";
-
-                for (let char of word) {
-                    const box = document.createElement("div");
-                    box.className = "letter-box";
-                    if (guessedLetters.includes(char)) {
-                        box.innerText = char;
-                        box.classList.add("open");
-                    } else {
-                        allOpened = false;
-                    }
-                    wordGroup.appendChild(box);
-                }
-                board.appendChild(wordGroup);
-            }
-
-            if (allOpened) {
-                if (currentLevel < levels.length - 1) {
-                    document.getElementById("next-btn").style.display = "inline-block";
-                } else {
-                    document.getElementById("question-text").innerText = "🎉 Поздравляем! Вы блестяще прошли все 20 вопросов по физиологии ЦНС!";
-                    document.getElementById("alphabet").innerHTML = "";
-                }
-            }
-        }
-
-        function renderAlphabet() {
-            const alphaDiv = document.getElementById("alphabet");
-            alphaDiv.innerHTML = "";
-            for (let char of letters) {
-                const btn = document.createElement("button");
-                btn.className = "btn-letter";
-                btn.innerText = char;
-                btn.disabled = guessedLetters.includes(char);
-                btn.onclick = () => {
-                    guessedLetters.push(char);
-                    btn.disabled = true;
-                    renderBoard();
-                };
-                alphaDiv.appendChild(btn);
-            }
-        }
-
-        function nextLevel() {
-            currentLevel++;
-            initLevel();
-        }
-
-        initLevel();
-    </script>
-</body>
-</html>
